@@ -1,0 +1,40 @@
+.chats {
+  max-width: 700px;
+  height: 700px;           /* adjust to your layout */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 1rem;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.userDiv {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nepAIDiv {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.userMessage {
+  background-color: #323232;
+  padding: 10px 20px;
+  border-radius: 10px;
+  max-width: 60%;
+  width: fit-content;
+  word-wrap: break-word;
+}
+
+.nepAIMessage {
+  background-color: #444;
+  padding: 10px 20px;
+  border-radius: 10px;
+  max-width: 60%;
+  width: fit-content;
+  word-wrap: break-word;
+}
