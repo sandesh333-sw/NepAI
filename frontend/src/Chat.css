@@ -38,3 +38,6 @@
   width: fit-content;
   word-wrap: break-word;
 }
+.hljs {
+  border-radius: 15px;
+}
