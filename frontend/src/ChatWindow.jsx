@@ -13,11 +13,13 @@ function ChatWindow() {
     currThreadId,
     prevChats,
     setPrevChats,
+    setNewChat,
   } = useContext(MyContext);
   const [loader, setLoader] = useState(false);
 
   const getReply = async () => {
     setLoader(true);
+    setNewChat(false);
     const options = {
       method: "POST",
       headers: {
