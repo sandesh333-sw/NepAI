@@ -1,6 +1,5 @@
 # 🤖 NepAI - Nepali AI Assistant
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-https://nepai.143.198.243.230.nip.io-brightgreen)](https://nepai.143.198.243.230.nip.io)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Deployed-blue)](https://kubernetes.io/)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED)](https://docker.com/)
 [![CI/CD](https://img.shields.io/badge/CI/CD-GitHub%20Actions-orange)](https://github.com/features/actions)
