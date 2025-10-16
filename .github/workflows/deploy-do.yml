@@ -69,7 +69,7 @@ jobs:
       run: echo ${{ secrets.DOCKER_API_KEY }} | docker login -u pulami --password-stdin
     
     - name: Save DigitalOcean kubeconfig
-      run: doctl kubernetes cluster kubeconfig save nepai-cluster
+      run: doctl kubernetes cluster kubeconfig save commitly
     
     - name: Build and push backend image
       run: |
