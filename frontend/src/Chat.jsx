@@ -21,7 +21,7 @@ function Chat() {
 
     let idx = 0;
     const interval = setInterval(() => {
-      setLatestReply(content.slice(0, idx + 1).join(""));
+      setLatestReply(content.slice(0, idx + 1).join(" "));
 
       idx++;
       if (idx >= content.length) clearInterval(interval);
@@ -53,15 +53,6 @@ function Chat() {
           <div className="aiDiv" key={"typing"}>
             <ReactMarkdown rehypePlugins={rehypeHighlight}>
               {latestReply}
-            </ReactMarkdown>
-          </div>
-        )}
-
-        {
-        prevChats.length > 0 && latestReply !== null && (
-          <div className="aiDiv" key={"typing"}>
-            <ReactMarkdown rehypePlugins={rehypeHighlight}>
-              {prevChats[prevChats.length-1].content}
             </ReactMarkdown>
           </div>
         )}

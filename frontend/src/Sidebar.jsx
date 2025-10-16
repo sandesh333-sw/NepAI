@@ -17,7 +17,7 @@ function SideBar() {
 
   const getAllThreads = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/thread");
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/thread`);
       const res = await response.json();
       console.log(res);
 
@@ -47,18 +47,43 @@ function SideBar() {
   };
 
   const changeThread = async (newThreadId) => {
-  setCurrThreadId(newThreadId);
-  try {
-    const response = await fetch(`http://localhost:8080/api/thread/${newThreadId}`);
-    const res = await response.json();
-    console.log(res);
-    setPrevChats(res);
-    setNewChat(false);
-    setReply(null);
-  } catch (error) {
-    console.log(error);
-  }
-};
+    setCurrThreadId(newThreadId);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/thread/${newThreadId}`);
+      const res = await response.json();
+      console.log(res);
+      setPrevChats(res);
+      setNewChat(false);
+      setReply(null);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteThread = async (threadId) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/thread/${threadId}`,
+        { method: "DELETE" }
+      );
+      const res = await response.json();
+      console.log(res);
+
+      // Remove the deleted thread from state
+      setAllThreads((prev) =>
+        prev.filter((thread) => thread.threadId !== threadId)
+      );
+
+      // Optionally clear current thread if you deleted it
+      if (currThreadId === threadId) {
+        setCurrThreadId(null);
+        setPrevChats([]);
+        setNewChat(true);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
 
   return (
@@ -74,10 +99,16 @@ function SideBar() {
       {/* history */}
       <ul className="history">
         {allThreads?.map((thread, idx) => (
-          <li key={idx}
-          onClick={(e) => changeThread(thread.threadId)}
-          >
-            {thread.title}</li>
+          <li key={idx} onClick={() => changeThread(thread.threadId)}>
+            {thread.title}
+            <i className="fa-solid fa-trash"
+            onClick={(e) => {
+                e.stopPropagation();
+                deleteThread(thread.threadId);
+            }}
+            >
+                </i>{" "}
+          </li>
         ))}
       </ul>
 

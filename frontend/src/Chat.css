@@ -22,7 +22,7 @@
 }
 
 .userMessage {
-  background-color: #323232;
+  background-color: #2a5a87;
   padding: 10px 20px;
   border-radius: 10px;
   max-width: 60%;
@@ -31,7 +31,7 @@
 }
 
 .nepAIMessage {
-  background-color: #444;
+  background-color: #3a3a3a;
   padding: 10px 20px;
   border-radius: 10px;
   max-width: 60%;
