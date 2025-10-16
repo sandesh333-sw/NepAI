@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nepai-backend-service
+  namespace: nepai-prod
+  labels:
+    app: nepai-backend
+    component: backend
+    environment: production
+spec:
+  selector:
+    app: nepai-backend
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nepai-frontend-service
+  namespace: nepai-prod
+  labels:
+    app: nepai-frontend
+    component: frontend
+    environment: production
+spec:
+  selector:
+    app: nepai-frontend
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  type: ClusterIP

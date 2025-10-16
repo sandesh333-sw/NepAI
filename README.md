@@ -4,7 +4,6 @@ NepAI is a Nepali AI website , designed to assist users with daily tasks and con
 
 ## Features
 - Chat with an AI assistant 
-- Custom Nepali accent and responses
 - Helps with regular daily tasks and queries
 - Built with Node.js, Express, MongoDB, and OpenAI API
 

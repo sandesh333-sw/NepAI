@@ -11,6 +11,11 @@ const PORT = 8080;
 app.use(express.json());
 app.use(cors());
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+});
+
 app.use("/api", chartRoutes);
 
 const connectDB = async() => {
