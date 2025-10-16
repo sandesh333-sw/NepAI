@@ -12,7 +12,7 @@ function SideBar() {
     setPrompt,
     setReply,
     setCurrThreadId,
-    setPrevChats, // ✅ typo fixed
+    setPrevChats, 
   } = useContext(MyContext);
 
   const getAllThreads = async () => {
@@ -43,7 +43,7 @@ function SideBar() {
     setPrompt("");
     setReply(null);
     setCurrThreadId(uuidv1());
-    setPrevChats([]); // ✅ typo fixed
+    setPrevChats([]); 
   };
 
   const changeThread = async (newThreadId) => {
@@ -90,7 +90,7 @@ function SideBar() {
     <section className="sidebar">
       {/* new chat button */}
       <button onClick={createNewChat}>
-        <img src="src/assets/mainlogo.png" className="logo" alt="appimage" />
+        <img src="/mainlogo.png" className="logo" alt="NepAI Logo" />
         <span>
           <i className="fa-solid fa-pencil"></i>
         </span>
