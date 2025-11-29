@@ -2,21 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nepai-frontend
-  namespace: nepai-prod
+  namespace: nepai
   labels:
     app: nepai-frontend
-    version: v1
-    component: frontend
-    environment: production
-  annotations:
-    deployment.kubernetes.io/revision: "1"
 spec:
   replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
   selector:
     matchLabels:
       app: nepai-frontend
@@ -24,20 +14,16 @@ spec:
     metadata:
       labels:
         app: nepai-frontend
-        version: v1
     spec:
       containers:
       - name: frontend
         image: pulami/nepai-frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
-          protocol: TCP
         env:
         - name: VITE_API_URL
-          valueFrom:
-            configMapKeyRef:
-              name: nepai-config
-              key: API_URL
+          value: "http://nepai.pulami.co.uk/api"
         resources:
           requests:
             memory: "32Mi"
@@ -45,20 +31,3 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-      restartPolicy: Always
