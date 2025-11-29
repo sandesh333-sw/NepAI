@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Threads } from "openai/resources/beta/threads/threads.js";
 
 const MessageSchema = new mongoose.Schema({
     role: {

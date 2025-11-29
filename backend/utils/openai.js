@@ -22,7 +22,8 @@ const getOpenAPIResponse = async(message) => {
        return data.choices[0].message.content;
 
     } catch (error) {
-        console.log(err);
+        console.log(error);
+        throw error;
     }
 }
 

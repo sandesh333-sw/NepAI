@@ -2,7 +2,7 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import mongoose from "mongoose";
-import chartRoutes from "./routes/chat.js";
+import chatRoutes from "./routes/chat.js";
 
 
 const app = express();
@@ -16,7 +16,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
-app.use("/api", chartRoutes);
+app.use("/api", chatRoutes);
 
 const connectDB = async() => {
     try {
