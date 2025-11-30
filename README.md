@@ -1,8 +1,6 @@
 # 🤖 NepAI - Nepali AI Assistant
 
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Deployed-blue)](https://kubernetes.io/)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED)](https://docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 NepAI is a smart and aware AI chat assistant. It helps with daily tasks, maintains conversation threads, and provides real-time responses with a modern, dark-themed interface.
 
