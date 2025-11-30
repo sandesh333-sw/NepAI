@@ -17,7 +17,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Backend
+      - name: Build & Push Backend
         run: |
           cd backend
           docker build -t pulami/nepai-backend:latest .
@@ -37,7 +37,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Frontend
+      - name: Build & Push Frontend
         run: |
           cd frontend
           docker build -t pulami/nepai-frontend:latest .
@@ -49,19 +49,17 @@ jobs:
     needs: [build-backend, build-frontend]
     runs-on: [self-hosted]
     steps:
-      - name: Deploy Backend to k3s
+      - name: Deploy Backend
         run: |
           kubectl set image deployment/nepai-backend \
-            backend=pulami/nepai-backend:${GITHUB_SHA} \
-            -n nepai
+            nepai-backend=pulami/nepai-backend:${GITHUB_SHA} -n nepai
           kubectl rollout status deployment/nepai-backend -n nepai
 
-      - name: Deploy Frontend to k3s
+      - name: Deploy Frontend
         run: |
           kubectl set image deployment/nepai-frontend \
-            frontend=pulami/nepai-frontend:${GITHUB_SHA} \
-            -n nepai
+            nepai-frontend=pulami/nepai-frontend:${GITHUB_SHA} -n nepai
           kubectl rollout status deployment/nepai-frontend -n nepai
 
       - name: Deployment Complete
-        run: echo "✅ NepAI deployed successfully!"
+        run: echo "🚀 NEPAI DEPLOYED SUCCESSFULLY SHA=${GITHUB_SHA}"
