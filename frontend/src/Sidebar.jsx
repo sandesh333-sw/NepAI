@@ -12,7 +12,9 @@ function SideBar() {
     setPrompt,
     setReply,
     setCurrThreadId,
-    setPrevChats, 
+    setPrevChats,
+    showSidebar, 
+    setShowSidebar
   } = useContext(MyContext);
 
   const getAllThreads = async () => {
@@ -87,7 +89,12 @@ function SideBar() {
 
 
   return (
-    <section className="sidebar">
+    <section className={`sidebar ${showSidebar ? "open" : ""}`}>
+      {/* mobile close button */}
+      <div className="mobile-close" onClick={() => setShowSidebar(false)}>
+          <i className="fa-solid fa-xmark"></i>
+      </div>
+
       {/* new chat button */}
       <button onClick={createNewChat}>
         <img src="/mainlogo.png" className="logo" alt="NepAI Logo" />
@@ -99,7 +106,10 @@ function SideBar() {
       {/* history */}
       <ul className="history">
         {allThreads?.map((thread, idx) => (
-          <li key={idx} onClick={() => changeThread(thread.threadId)}>
+          <li key={idx} onClick={() => {
+              changeThread(thread.threadId);
+              setShowSidebar(false); // Close sidebar on mobile after selection
+          }}>
             {thread.title}
             <i className="fa-solid fa-trash"
             onClick={(e) => {

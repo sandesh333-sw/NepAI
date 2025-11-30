@@ -18,6 +18,22 @@
     align-items: center;
 }
 
+.navLeft {
+    display: flex;
+    align-items: center;
+}
+
+.menuBtn {
+    display: none; /* Hidden by default on desktop */
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: 1rem;
+    padding: 0.5rem;
+}
+
 .navbar span {
     margin: 1rem 2rem;
 }
@@ -63,9 +79,11 @@ input {
     font-size: 0.8rem;
     border-radius: 14px;
     box-shadow: rgba(0, 0, 0, 0.1) 0 4px 15px;
+    transition: background-color 0.3s ease;
 }
 
-input:focus {
+input:hover, input:focus {
+    background-color: rgba(255, 255, 255, 0.12);
     outline: none;
 }
 
@@ -79,10 +97,30 @@ input:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.3s ease;
+    border-radius: 50%;
+}
+
+#submit:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 #submit i:hover {
     color: #fff;
+}
+
+@media (max-width: 768px) {
+    .menuBtn {
+        display: block;
+    }
+
+    .navbar span {
+        margin: 1rem 1rem;
+    }
+
+    .inputBox {
+        width: 90%;
+    }
 }
 
 .info {

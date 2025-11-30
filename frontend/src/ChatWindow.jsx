@@ -14,6 +14,7 @@ function ChatWindow() {
     prevChats,
     setPrevChats,
     setNewChat,
+    setShowSidebar,
   } = useContext(MyContext);
   const [loader, setLoader] = useState(false);
 
@@ -57,7 +58,12 @@ function ChatWindow() {
   return (
     <div className="chatWindow">
       <div className="navbar">
-        <span>NepAI</span>
+        <div className="navLeft">
+            <button className="menuBtn" onClick={() => setShowSidebar(true)}>
+                <i className="fa-solid fa-bars"></i>
+            </button>
+            <span>NepAI</span>
+        </div>
         <div className="userIconDiv">
           <span>
             <i className="fa-solid fa-user"></i>

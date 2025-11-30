@@ -12,6 +12,7 @@ function App() {
   const [prevChats, setPrevChats] = useState([]);
   const [newChat, setNewChat] = useState(true);
   const [allThreads, setAllThreads] = useState([]);
+  const [showSidebar, setShowSidebar] = useState(false);
 
 
   const providerValues = {
@@ -20,14 +21,15 @@ function App() {
     currThreadId, setCurrThreadId,
     newChat, setNewChat,
     prevChats, setPrevChats,
-    allThreads, setAllThreads
-
+    allThreads, setAllThreads,
+    showSidebar, setShowSidebar
   };
 
   return (
     <div className='app'>
       <MyContext.Provider value = {providerValues}>
       <Sidebar></Sidebar>
+      {showSidebar && <div className="mobile-overlay" onClick={() => setShowSidebar(false)}></div>}
       <ChatWindow></ChatWindow>
       </MyContext.Provider>
     </div>
