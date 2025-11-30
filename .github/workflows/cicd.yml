@@ -52,14 +52,14 @@ jobs:
       - name: Deploy Backend
         run: |
           kubectl set image deployment/nepai-backend \
-            nepai-backend=pulami/nepai-backend:${GITHUB_SHA} -n nepai
+            backend=pulami/nepai-backend:${GITHUB_SHA} -n nepai
           kubectl rollout status deployment/nepai-backend -n nepai
 
       - name: Deploy Frontend
         run: |
           kubectl set image deployment/nepai-frontend \
-            nepai-frontend=pulami/nepai-frontend:${GITHUB_SHA} -n nepai
+            frontend=pulami/nepai-frontend:${GITHUB_SHA} -n nepai
           kubectl rollout status deployment/nepai-frontend -n nepai
 
       - name: Deployment Complete
-        run: echo "🚀 NEPAI DEPLOYED SUCCESSFULLY SHA=${GITHUB_SHA}"
+        run: echo "🔥 NEPAI LIVE — SHA=${GITHUB_SHA}"
