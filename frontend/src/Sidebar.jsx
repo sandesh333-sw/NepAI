@@ -1,7 +1,9 @@
 import "./Sidebar.css";
 import { useContext, useEffect } from "react";
 import { MyContext } from "./MyContext";
+import { useAuth } from "./contexts/AuthContext";
 import { v1 as uuidv1 } from "uuid";
+import { useNavigate } from "react-router-dom";
 
 function SideBar() {
   const {
@@ -16,10 +18,21 @@ function SideBar() {
     showSidebar, 
     setShowSidebar
   } = useContext(MyContext);
+  
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   const getAllThreads = async () => {
     try {
-      const response = await fetch(`/api/thread`);
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const response = await fetch(`${apiUrl}/api/thread`, {
+        credentials: "include"
+      });
       const res = await response.json();
       console.log(res);
 
@@ -51,7 +64,10 @@ function SideBar() {
   const changeThread = async (newThreadId) => {
     setCurrThreadId(newThreadId);
     try {
-      const response = await fetch(`/api/thread/${newThreadId}`);
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const response = await fetch(`${apiUrl}/api/thread/${newThreadId}`, {
+        credentials: "include"
+      });
       const res = await response.json();
       console.log(res);
       setPrevChats(res);
@@ -64,9 +80,13 @@ function SideBar() {
 
   const deleteThread = async (threadId) => {
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
       const response = await fetch(
-        `/api/thread/${threadId}`,
-        { method: "DELETE" }
+        `${apiUrl}/api/thread/${threadId}`,
+        { 
+          method: "DELETE",
+          credentials: "include"
+        }
       );
       const res = await response.json();
       console.log(res);
@@ -122,9 +142,20 @@ function SideBar() {
         ))}
       </ul>
 
-      {/* sign in */}
-      <div className="sign">
-        <p>By NepAI &hearts;</p>
+      {/* user info */}
+      <div className="user-section">
+        <div className="user-info">
+          <div className="user-avatar">
+            {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+          </div>
+          <div className="user-details">
+            <p className="user-name">{user?.name || 'User'}</p>
+            <p className="user-email">{user?.email}</p>
+          </div>
+        </div>
+        <button className="logout-btn" onClick={handleLogout} title="Logout">
+          <i className="fa-solid fa-right-from-bracket"></i>
+        </button>
       </div>
     </section>
   );

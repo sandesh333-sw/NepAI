@@ -12,21 +12,27 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Check existing
-    const existingUser = await User.findOne({ email });
+    // Check existing - normalize email to lowercase
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      // Check if user has password (email/password account) or only Google
+      if (existingUser.password) {
+        return res.status(400).json({ message: "An account with this email already exists. Please sign in instead." });
+      } else {
+        return res.status(400).json({ message: "This email is already registered with Google. Please sign in with Google." });
+      }
     }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create User
+    // Create User with normalized email
     const newUser = new User({
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
-      displayName: displayName || email.split('@')[0],
+      displayName: displayName || normalizedEmail.split('@')[0],
     });
 
     await newUser.save();

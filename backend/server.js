@@ -13,8 +13,9 @@ import "./config/passport.js"; // + Import passport config
 const app = express();
 const PORT = 8080;
 
-// 1. Trust Proxy for Cloudflare/K8s
-app.set("trust proxy", 1);
+// 1. Trust Proxy for Cloudflare/K8s/Traefik
+// Set to true to trust all proxies (safe when not directly exposed to internet)
+app.set("trust proxy", true);
 
 // 2. Middleware
 app.use(express.json());
@@ -46,7 +47,8 @@ app.use(
     }),
     cookie: {
       secure: process.env.NODE_ENV === "production", // True for https
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // Adjust based on domain
+      httpOnly: true, // Prevents XSS attacks
+      sameSite: "lax", // CSRF protection (works for same-domain setup)
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
   })
