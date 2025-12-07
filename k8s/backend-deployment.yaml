@@ -26,6 +26,12 @@ spec:
           value: "production"
         - name: PORT
           value: "8080"
+        - name: FRONTEND_URL
+          value: "https://nepai.pulami.co.uk"
+        - name: BACKEND_URL
+          value: "https://nepai.pulami.co.uk"
+        - name: GOOGLE_CALLBACK_URL
+          value: "https://nepai.pulami.co.uk/api/auth/google/callback"
         - name: MONGODB_URI
           valueFrom:
             secretKeyRef:
@@ -36,6 +42,35 @@ spec:
             secretKeyRef:
               name: nepai-secrets
               key: openai-api-key
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: nepai-secrets
+              key: session-secret
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: nepai-secrets
+              key: google-client-id
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: nepai-secrets
+              key: google-client-secret
+        - name: MAILTRAP_USER
+          valueFrom:
+            secretKeyRef:
+              name: nepai-secrets
+              key: mailtrap-user
+        - name: MAILTRAP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: nepai-secrets
+              key: mailtrap-pass
+        - name: MAILTRAP_HOST
+          value: "smtp.mailtrap.io"
+        - name: MAILTRAP_PORT
+          value: "2525"
         resources:
           requests:
             memory: "128Mi"

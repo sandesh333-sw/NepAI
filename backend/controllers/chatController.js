@@ -16,10 +16,14 @@ export const testThread = async (req, res) => {
     }
 };
 
-// Get all threads
+// Get all threads for the authenticated user
 export const getAllThreads = async (req, res) => {
     try {
-        const threads = await Thread.find({}).sort({ updatedAt: -1 });
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        const threads = await Thread.find({ userId: req.user._id }).sort({ updatedAt: -1 });
         // descending order of updated at we need most recent data on top
         res.json(threads);
     } catch (error) {
@@ -28,11 +32,15 @@ export const getAllThreads = async (req, res) => {
     }
 };
 
-// Get a specific thread by threadId
+// Get a specific thread by threadId (only if it belongs to the user)
 export const getThreadById = async (req, res) => {
     const { threadId } = req.params;
     try {
-        const thread = await Thread.findOne({ threadId });
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        const thread = await Thread.findOne({ threadId, userId: req.user._id });
         if (!thread) {
             return res.status(404).json({ error: "Thread is not found" });
         }
@@ -43,11 +51,15 @@ export const getThreadById = async (req, res) => {
     }
 };
 
-// Delete a thread by threadId
+// Delete a thread by threadId (only if it belongs to the user)
 export const deleteThread = async (req, res) => {
     const { threadId } = req.params;
     try {
-        const deletedThread = await Thread.findOneAndDelete({ threadId });
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        const deletedThread = await Thread.findOneAndDelete({ threadId, userId: req.user._id });
 
         if (!deletedThread) {
             return res.status(404).json({ error: "Thread not found" });
@@ -63,21 +75,30 @@ export const deleteThread = async (req, res) => {
 export const chat = async (req, res) => {
     const { threadId, message } = req.body;
 
+    if (!req.user || !req.user._id) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
     if (!threadId || !message) {
         return res.status(400).json({ error: "missing required fields" });
     }
 
     try {
-        let thread = await Thread.findOne({ threadId });
+        let thread = await Thread.findOne({ threadId, userId: req.user._id });
 
         if (!thread) {
-            // creating a new thread in db
+            // creating a new thread in db with userId
             thread = new Thread({
                 threadId,
+                userId: req.user._id,
                 title: message,
                 messages: [{ role: "user", content: message }]
             });
         } else {
+            // Verify thread belongs to user (extra security check)
+            if (thread.userId.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: "Access denied" });
+            }
             thread.messages.push({ role: "user", content: message });
         }
 

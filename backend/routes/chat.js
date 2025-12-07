@@ -6,18 +6,19 @@ import {
     deleteThread,
     chat
 } from "../controllers/chatController.js";
+import { isAuthenticated } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Test route
+// Test route (can be removed in production)
 router.post("/test", testThread);
 
-// Thread routes
-router.get("/thread", getAllThreads);
-router.get("/thread/:threadId", getThreadById);
-router.delete("/thread/:threadId", deleteThread);
+// All thread routes require authentication
+router.get("/thread", isAuthenticated, getAllThreads);
+router.get("/thread/:threadId", isAuthenticated, getThreadById);
+router.delete("/thread/:threadId", isAuthenticated, deleteThread);
 
-// Chat route
-router.post("/chat", chat);
+// Chat route requires authentication
+router.post("/chat", isAuthenticated, chat);
 
 export default router;
