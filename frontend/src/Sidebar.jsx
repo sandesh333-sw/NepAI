@@ -29,7 +29,7 @@ function SideBar() {
 
   const getAllThreads = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://localhost:8080");
       const response = await fetch(`${apiUrl}/api/thread`, {
         credentials: "include"
       });
@@ -64,7 +64,7 @@ function SideBar() {
   const changeThread = async (newThreadId) => {
     setCurrThreadId(newThreadId);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://localhost:8080");
       const response = await fetch(`${apiUrl}/api/thread/${newThreadId}`, {
         credentials: "include"
       });
@@ -80,7 +80,7 @@ function SideBar() {
 
   const deleteThread = async (threadId) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://localhost:8080");
       const response = await fetch(
         `${apiUrl}/api/thread/${threadId}`,
         { 

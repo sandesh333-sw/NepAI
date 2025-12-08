@@ -30,7 +30,7 @@ export const sendWelcomeEmail = async (email, name) => {
                         Get started by asking any question or exploring the features we have to offer.
                     </p>
                     <div style="margin: 30px 0; text-align: center;">
-                        <a href="http://localhost:5173" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+                        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
                             Start Chatting →
                         </a>
                     </div>

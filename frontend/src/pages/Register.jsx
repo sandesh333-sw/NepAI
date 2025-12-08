@@ -40,7 +40,7 @@ export default function Register() {
   };
 
   const handleGoogleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://localhost:8080");
     window.location.href = `${apiUrl}/api/auth/google`;
   };
 

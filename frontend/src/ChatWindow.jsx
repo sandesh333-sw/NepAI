@@ -21,7 +21,7 @@ function ChatWindow() {
   const getReply = async () => {
     setLoader(true);
     setNewChat(false);
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : "http://localhost:8080");
     const options = {
       method: "POST",
       headers: {

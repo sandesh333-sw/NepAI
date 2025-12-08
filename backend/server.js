@@ -48,7 +48,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production", // True for https
       httpOnly: true, // Prevents XSS attacks
-      sameSite: "lax", // CSRF protection (works for same-domain setup)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-site cookies in production
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
   })
