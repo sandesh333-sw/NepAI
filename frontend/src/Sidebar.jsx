@@ -33,19 +33,29 @@ function SideBar() {
       const response = await fetch(`${apiUrl}/api/thread`, {
         credentials: "include"
       });
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Unauthorized - please login");
+          setAllThreads([]);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const res = await response.json();
       console.log(res);
 
-      const filteredData = res.map((thread) => ({
+      // Ensure res is an array before mapping
+      const filteredData = Array.isArray(res) ? res.map((thread) => ({
         threadId: thread.threadId,
         title: thread.title,
-      }));
+      })) : [];
 
       console.log(filteredData);
 
       setAllThreads(filteredData);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching threads:", error);
+      setAllThreads([]);
     }
   };
 
@@ -68,13 +78,21 @@ function SideBar() {
       const response = await fetch(`${apiUrl}/api/thread/${newThreadId}`, {
         credentials: "include"
       });
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Unauthorized - please login");
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const res = await response.json();
       console.log(res);
-      setPrevChats(res);
+      // Ensure res is an array
+      setPrevChats(Array.isArray(res) ? res : []);
       setNewChat(false);
       setReply(null);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching thread:", error);
     }
   };
 
@@ -88,6 +106,13 @@ function SideBar() {
           credentials: "include"
         }
       );
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Unauthorized - please login");
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const res = await response.json();
       console.log(res);
 

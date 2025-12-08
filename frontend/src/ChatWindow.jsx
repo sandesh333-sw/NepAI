@@ -36,11 +36,18 @@ function ChatWindow() {
 
     try {
       const response = await fetch(`${apiUrl}/api/chat`, options);
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Unauthorized - please login");
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const res = await response.json();
       console.log(reply);
       setReply(res.reply);
     } catch (error) {
-      console.log(error);
+      console.error("Chat error:", error);
     }
     setLoader(false);
   };

@@ -14,7 +14,9 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", { 
+    failureRedirect: process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/login` : "http://localhost:5173/login"
+  }),
   (req, res) => {
     // Successful authentication, redirect home.
     // In production, redirect to your frontend URL

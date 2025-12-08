@@ -48,7 +48,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production", // True for https
       httpOnly: true, // Prevents XSS attacks
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-site cookies in production
+      sameSite: "lax", // Works for same-domain (frontend and backend on same domain via Ingress)
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     },
   })
