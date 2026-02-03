@@ -39,25 +39,35 @@ export async function GET(req, context) {
 
 
 
-export async function DELETE(req, { params }){
-    try {
-        const { userId } = await auth();
+export async function DELETE(req, context) {
+  try {
+    const { userId } = await auth();
 
-        if (!userId){
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        await dbConnect();
-
-        const deletedThread = await Thread.findOneAndDelete({
-            _id: params.id,
-            userId
-        });
-
-        return NextResponse.json({ message: "Thread deleted successfully" });
-
-    } catch (error) {
-        console.error("Delete thread error", error);
-        return NextResponse.json({ error: "Failed to delete thread" }, { status: 500 });
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const params = await context.params;
+    const id = params.id;
+
+    await dbConnect();
+
+    const deletedThread = await Thread.findOneAndDelete({
+      _id: id,
+      userId
+    });
+
+    if (!deletedThread) {
+      return NextResponse.json(
+        { error: "Thread not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: "Thread deleted successfully" });
+
+  } catch (error) {
+    console.error("Delete thread error", error);
+    return NextResponse.json({ error: "Failed to delete thread" }, { status: 500 });
+  }
 }
