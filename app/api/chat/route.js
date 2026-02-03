@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import dbConnect from "@/app/lib/dbConnect";
-import Thread from "@/app/models/Thread";
+import dbConnect from "@/lib/dbConnect";
+import Thread from "@/models/Thread";
 import getOpenAIResponse from "@/app/utils/openai";
 
 export async function POST(req){
