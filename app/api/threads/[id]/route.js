@@ -29,3 +29,26 @@ export async function GET(req, { params }){
         return NextResponse.json({ error: "Failed to fetch thread" }, { status: 500 });
     }
 }
+
+export async function DELETE(req, { params }){
+    try {
+        const { userId } = await auth();
+
+        if (!userId){
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        await dbConnect();
+
+        const deletedThread = await Thread.findOneAndDelete({
+            _id: params.id,
+            userId
+        });
+
+        return NextResponse.json({ message: "Thread deleted successfully" });
+
+    } catch (error) {
+        console.error("Delete thread error", error);
+        return NextResponse.json({ error: "Failed to delete thread" }, { status: 500 });
+    }
+}
