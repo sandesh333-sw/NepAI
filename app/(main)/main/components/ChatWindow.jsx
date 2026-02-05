@@ -3,7 +3,10 @@ import React from 'react'
 const ChatWindow = () => {
   return (
     <div>
-      ChatWindow
+      <div>
+        <h1>Text</h1>
+      </div>
+      <h2>Input button here</h2>
     </div>
   )
 }
