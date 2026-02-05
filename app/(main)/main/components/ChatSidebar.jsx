@@ -2,8 +2,12 @@ import React from 'react'
 
 const ChatSidebar = () => {
   return (
-    <div>
-      ChatSidebar
+    <div className='w-80 border-r'>
+      <button>New Chat</button>
+      <div>
+        <span>Title</span>
+        <button>Delete</button>
+      </div>
     </div>
   )
 }
