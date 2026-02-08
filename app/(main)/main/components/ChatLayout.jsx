@@ -4,9 +4,7 @@ import ChatWindow from './ChatWindow'
 
 const ChatLayout = () => {
   return (
-    <div>
-      ChatLayout
-
+    <div className='flex w-full h-full overflow-hidden'>
       <ChatSidebar />
       <ChatWindow />
     </div>

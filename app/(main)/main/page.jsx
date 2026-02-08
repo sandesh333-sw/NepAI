@@ -3,7 +3,9 @@ import ChatLayout from './components/ChatLayout'
 
 const MainPage = () => {
   return (
-    <ChatLayout />
+    <div className='h-screen w-screen'>
+      <ChatLayout />
+    </div>
   )
 }
 
