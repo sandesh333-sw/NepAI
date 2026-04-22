@@ -14,11 +14,11 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 6 chats per week (7 days = 604800 seconds)
-    const limit = await rateLimit(userId, 'chat', 6, 604800)
+    // 7 chats per week (7 days = 604800 seconds)
+    const limit = await rateLimit(userId, 'chat', 7, 604800)
     if (!limit.success) {
       return NextResponse.json(
-        { error: 'Weekly limit reached (6 chats/week)', resetIn: `${Math.ceil(limit.resetIn / 3600)}h` },
+        { error: 'Weekly limit reached (7 chats/week)', resetIn: `${Math.ceil(limit.resetIn / 3600)}h` },
         { status: 429 }
       )
     }

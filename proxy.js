@@ -13,7 +13,7 @@ function securityHeaders(response) {
 }
 
 async function checkIpLimit(ip) {
-  const result = await rateLimiter.check(ip, 'ip', 100, 60) // 100/min
+  const result = await rateLimiter.check(ip, 'ip', 50, 3600) // 50/hour
   return result.success
 }
 
