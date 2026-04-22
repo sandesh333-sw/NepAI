@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import dbConnect from '@/lib/dbConnect'
+import redis from '@/lib/redis'
 
 export async function GET() {
   const health = {
@@ -8,14 +9,29 @@ export async function GET() {
     services: {}
   }
 
+  // Check MongoDB
   try {
     await dbConnect()
-    health.services.mongodb = 'connected'
-  } catch (error) {
+    health.services.mongodb = 'ok'
+  } catch {
     health.status = 'unhealthy'
-    health.services.mongodb = 'disconnected'
+    health.services.mongodb = 'down'
   }
 
-  const statusCode = health.status === 'healthy' ? 200 : 503
-  return NextResponse.json(health, { status: statusCode }) 
+  // Check Redis
+  try {
+    if (redis) {
+      await redis.ping()
+      health.services.redis = 'ok'
+    } else {
+      health.services.redis = 'disabled'
+    }
+  } catch {
+    health.status = 'degraded'
+    health.services.redis = 'down'
+  }
+
+  return NextResponse.json(health, { 
+    status: health.status === 'healthy' ? 200 : 503 
+  })
 }
