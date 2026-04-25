@@ -7,6 +7,8 @@ import { objectIdSchema, validate } from '@/lib/validation'
 import { cache } from '@/lib/redis'
 
 export async function GET(req, context) {
+  const requestId = crypto.randomUUID()
+
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -29,6 +31,13 @@ export async function GET(req, context) {
     const cached = await cache.get(cacheKey)
     if (cached) return NextResponse.json(cached)
 
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { error: 'Server config error (MONGODB_URI missing)', requestId },
+        { status: 500 }
+      )
+    }
+
     await dbConnect()
 
     const thread = await Thread.findOne({ _id: id, userId }).lean()
@@ -41,12 +50,28 @@ export async function GET(req, context) {
     return NextResponse.json(thread)
 
   } catch (error) {
-    console.error('Get thread error:', error)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    const message = error?.message || 'Unknown error'
+    console.error(`Get thread error [${requestId}]:`, error)
+
+    if (
+      message.includes('MONGODB_URI') ||
+      message.includes('Mongo') ||
+      message.includes('ECONNREFUSED') ||
+      message.includes('ENOTFOUND')
+    ) {
+      return NextResponse.json(
+        { error: `Database request failed: ${message}`, requestId },
+        { status: 503 }
+      )
+    }
+
+    return NextResponse.json({ error: `Internal error: ${message}`, requestId }, { status: 500 })
   }
 }
 
 export async function DELETE(req, context) {
+  const requestId = crypto.randomUUID()
+
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -65,6 +90,13 @@ export async function DELETE(req, context) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { error: 'Server config error (MONGODB_URI missing)', requestId },
+        { status: 500 }
+      )
+    }
+
     await dbConnect()
 
     const deleted = await Thread.findOneAndDelete({ _id: id, userId })
@@ -78,7 +110,21 @@ export async function DELETE(req, context) {
     return NextResponse.json({ message: 'Deleted' })
 
   } catch (error) {
-    console.error('Delete error:', error)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    const message = error?.message || 'Unknown error'
+    console.error(`Delete thread error [${requestId}]:`, error)
+
+    if (
+      message.includes('MONGODB_URI') ||
+      message.includes('Mongo') ||
+      message.includes('ECONNREFUSED') ||
+      message.includes('ENOTFOUND')
+    ) {
+      return NextResponse.json(
+        { error: `Database request failed: ${message}`, requestId },
+        { status: 503 }
+      )
+    }
+
+    return NextResponse.json({ error: `Internal error: ${message}`, requestId }, { status: 500 })
   }
 }

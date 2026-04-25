@@ -46,10 +46,13 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }])
 
     try {
+      const payload = { message: userMessage }
+      if (threadId) payload.threadId = threadId
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threadId, message: userMessage })
+        body: JSON.stringify(payload)
       })
       if (res.status === 401) {
         window.location.href = '/sign-in'
