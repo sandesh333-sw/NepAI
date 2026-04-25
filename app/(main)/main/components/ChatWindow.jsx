@@ -25,6 +25,10 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
   const fetchThread = async (id) => {
     try {
       const res = await fetch(`/api/threads/${id}`)
+      if (res.status === 401) {
+        window.location.href = '/sign-in'
+        return
+      }
       const data = await res.json()
       if (data.messages) setMessages(data.messages)
     } catch (error) {
@@ -47,6 +51,10 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId, message: userMessage })
       })
+      if (res.status === 401) {
+        window.location.href = '/sign-in'
+        return
+      }
 
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
