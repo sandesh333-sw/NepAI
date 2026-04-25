@@ -8,6 +8,8 @@ import { chatBodySchema, validate } from '@/lib/validation'
 import { cache } from '@/lib/redis'
 
 export async function POST(req) {
+  const requestId = crypto.randomUUID()
+
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -30,6 +32,20 @@ export async function POST(req) {
     }
 
     const { threadId, message } = validation.data
+
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json(
+        { error: 'Server config error (MONGODB_URI missing)', requestId },
+        { status: 500 }
+      )
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: 'Server config error (OPENAI_API_KEY missing)', requestId },
+        { status: 500 }
+      )
+    }
 
     await dbConnect()
 
@@ -56,7 +72,41 @@ export async function POST(req) {
     return NextResponse.json({ reply, threadId: thread._id, remaining: limit.remaining })
 
   } catch (error) {
-    console.error('Chat error:', error)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    const message = error?.message || 'Unknown error'
+    console.error(`Chat error [${requestId}]:`, error)
+
+    if (message.includes('OPENAI_API_KEY is not configured')) {
+      return NextResponse.json(
+        { error: 'AI provider is not configured on server', requestId },
+        { status: 500 }
+      )
+    }
+
+    if (
+      message.includes('Incorrect API key') ||
+      message.includes('No API key provided') ||
+      message.includes('quota') ||
+      message.includes('insufficient_quota') ||
+      message.includes('model')
+    ) {
+      return NextResponse.json(
+        { error: `OpenAI request failed: ${message}`, requestId },
+        { status: 502 }
+      )
+    }
+
+    if (
+      message.includes('MONGODB_URI') ||
+      message.includes('Mongo') ||
+      message.includes('ECONNREFUSED') ||
+      message.includes('ENOTFOUND')
+    ) {
+      return NextResponse.json(
+        { error: `Database request failed: ${message}`, requestId },
+        { status: 503 }
+      )
+    }
+
+    return NextResponse.json({ error: `Internal error: ${message}`, requestId }, { status: 500 })
   }
 }
