@@ -14,6 +14,10 @@ const ChatSidebar = ({ selectedThreadId, onSelectThread, onNewChat, refreshTrigg
     setLoading(true)
     try {
       const res = await fetch('/api/threads')
+      if (res.status === 401) {
+        window.location.href = '/sign-in'
+        return
+      }
       const data = await res.json()
       if (Array.isArray(data)) setThreads(data)
     } catch (error) {
@@ -27,6 +31,10 @@ const ChatSidebar = ({ selectedThreadId, onSelectThread, onNewChat, refreshTrigg
     e.stopPropagation()
     try {
       const res = await fetch(`/api/threads/${threadId}`, { method: 'DELETE' })
+      if (res.status === 401) {
+        window.location.href = '/sign-in'
+        return
+      }
       if (res.ok) {
         setThreads(prev => prev.filter(t => t._id !== threadId))
         if (selectedThreadId === threadId) onNewChat()

@@ -20,6 +20,18 @@ const NavBar = () => {
 
         {/* Right: Auth */}
         <div className="flex items-center gap-3">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white hover:bg-gray-800 transition-colors">
+                Sign Up
+              </button>
+            </SignUpButton>
+          </SignedOut>
           <SignedIn>
             <UserButton/>
           </SignedIn>
