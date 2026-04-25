@@ -3,6 +3,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import NavBar from "./(main)/navbar/page";
 import Footer from "./(main)/footer/page";
+import { assertClerkProdKeys } from "@/lib/envGuard";
 
 
 const geistSans = Geist({
@@ -21,6 +22,8 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  assertClerkProdKeys();
+
   return (
     <ClerkProvider>
       <html lang="en">
