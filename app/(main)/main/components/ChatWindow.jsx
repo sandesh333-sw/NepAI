@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import toast from 'react-hot-toast'
 
 const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
   const [messages, setMessages] = useState([])
@@ -60,7 +61,17 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
       }
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) {
+        if (res.status === 429 && data?.error?.toLowerCase().includes('weekly limit')) {
+          toast.error('Weekly chat limit reached. Please try again next week.')
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: 'You have reached your weekly chat limit (7/week). Please try again next week.'
+          }])
+          return
+        }
+        throw new Error(data.error)
+      }
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
 
