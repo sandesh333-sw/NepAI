@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import NavBar from "./(main)/navbar/page";
 import Footer from "./(main)/footer/page";
 import { assertClerkProdKeys } from "@/lib/envGuard";
+import ToastProvider from "./ToastProvider";
 
 
 const geistSans = Geist({
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
             {children}
           </main>
           <Footer />
+          <ToastProvider />
         </body>
       </html>
     </ClerkProvider>
