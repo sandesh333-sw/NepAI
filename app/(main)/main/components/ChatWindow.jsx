@@ -100,7 +100,7 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
   }
 
   return (
-    <div className='flex flex-col h-full w-full bg-gray-50'>
+    <div className='relative flex flex-col h-full w-full bg-gray-50'>
 
       {/* Header */}
       <div className="flex items-center border-b border-gray-200 px-3 py-3 bg-white md:px-4">
@@ -111,52 +111,50 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
         >
           ☰
         </button>
-        <h1 className="flex-1 text-sm font-semibold text-gray-700 text-center md:text-left">
+        <h1 className="flex-1 text-sm font-semibold text-gray-800 text-center md:text-left">
           {threadId ? 'Chat' : 'New Chat'}
         </h1>
         <div className="w-12 md:hidden" />
       </div>
 
-      {/* Messages Container */}
-      <div className='flex-1 overflow-y-auto bg-gray-50 pb-24'>
-        
-        {/* Empty State */}
+      {/* Messages Container — content always sticks to bottom */}
+      <div className='flex-1 overflow-y-auto bg-gray-50 pb-24 flex flex-col justify-end'>
+
+        {/* Empty State – aligned at bottom naturally */}
         {messages.length === 0 && !loading && (
-          <div className='flex h-full items-center justify-center px-6'>
-            <div className="text-center max-w-md">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
-                <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-              </div>
-              <h3 className='text-gray-700 text-base font-semibold mb-2'>Start a conversation (Test) </h3>
-              <p className='text-gray-500 text-sm'>Ask me anything and I'll do my best to help!</p>
+          <div className="flex flex-col items-center justify-end px-6 pt-8 pb-2">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 mb-4">
+              <svg className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
             </div>
+            <h3 className='text-gray-800 text-base font-semibold mb-2'>Start a conversation Test(CI-CD)</h3>
+            <p className='text-gray-500 text-sm'>Ask me anything and I'll do my best to help!</p>
           </div>
         )}
 
-        {/* Messages - pushed to bottom when few messages */}
+        {/* Messages list */}
         {messages.length > 0 && (
-          <div className={`min-h-full flex flex-col ${messages.length < 5 ? 'justify-end' : ''} p-4 space-y-4`}>
+          <div className="p-4 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 
                 {msg.role === 'assistant' && (
-                  <div className='mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500 text-xs text-white font-semibold'>
+                  <div className='mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs text-white font-semibold'>
                     AI
                   </div>
                 )}
 
                 <div className={`max-w-[85%] rounded-2xl px-4 py-3 md:max-w-2xl ${
                   msg.role === 'user'
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-white text-gray-800 border border-gray-200 shadow-sm'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">{msg.content}</p>
                 </div>
 
                 {msg.role === 'user' && (
-                  <div className='ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-700 text-xs text-white font-semibold'>
+                  <div className='ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-800 text-xs text-white font-semibold'>
                     U
                   </div>
                 )}
@@ -166,7 +164,7 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
 
             {loading && (
               <div className='flex justify-start'>
-                <div className='mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500 text-xs text-white font-semibold'>
+                <div className='mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs text-white font-semibold'>
                   AI
                 </div>
                 <div className='rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm'>
@@ -182,13 +180,12 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
             <div ref={bottomRef} />
           </div>
         )}
-
       </div>
 
-      {/* Floating Input - Compact & Shorter */}
+      {/* Floating Input */}
       <div className='absolute bottom-0 left-0 right-0 p-3 bg-gray-50 md:p-4'>
         <div className='max-w-3xl mx-auto'>
-          <div className='flex items-center gap-2 rounded-full bg-white border border-gray-300 px-4 py-2 shadow-lg hover:shadow-xl focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all'>
+          <div className='flex items-center gap-2 rounded-full bg-white border border-gray-300 px-4 py-2 shadow-lg hover:shadow-xl focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all'>
             <input
               type="text"
               value={input}
@@ -207,7 +204,7 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
               onClick={handleSend}
               disabled={loading || !input.trim()}
               aria-label="Send message"
-              className='shrink-0 rounded-full bg-blue-600 p-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95'
+              className='shrink-0 rounded-full bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95'
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
