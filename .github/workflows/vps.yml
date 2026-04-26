@@ -1,4 +1,4 @@
-name: Deploy NepAI
+name: Deploy NepAI In VPS
 
 on:
   push:
@@ -10,14 +10,26 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Pull latest code
-        run: cd ~/NepAI && git pull
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: cd ~/NepAI && npm install
+      - name: Create .env
+        run: |
+          echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" >> .env
+          echo "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL }}" >> .env
+          echo "NEXT_PUBLIC_CLERK_SIGN_IN_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}" >> .env
+          echo "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+          echo "UPSTASH_REDIS_REST_TOKEN=${{ secrets.UPSTASH_REDIS_REST_TOKEN }}" >> .env
+          echo "UPSTASH_REDIS_URL=${{ secrets.UPSTASH_REDIS_URL }}" >> .env
+          echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> .env
 
-      - name: Build app
-        run: cd ~/NepAI && npm run build
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-      - name: Restart app (PM2)
-        run: cd ~/NepAI && pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js && pm2 save
+      - run: npm ci
+      - run: npm run build
+      - run: pm2 reload ecosystem.config.js --env production

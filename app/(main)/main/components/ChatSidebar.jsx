@@ -62,66 +62,71 @@ const ChatSidebar = ({
 
   return (
     <>
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <button
-          aria-label="Close sidebar overlay"
-          className="fixed inset-0 z-20 bg-black/30 md:hidden"
+        <div
+          className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm md:hidden"
           onClick={onCloseSidebar}
         />
       )}
+
+      {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 flex h-full w-72 flex-col border-r border-gray-200 bg-gray-50 text-gray-800 transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 flex h-full w-80 max-w-[85vw] flex-col border-r border-gray-200 bg-gray-50 text-gray-800 shadow-xl transition-transform duration-300 ease-in-out md:static md:w-72 md:shadow-none md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3.5">
           <h1 className="text-sm font-semibold text-gray-700">Chats</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={onNewChat}
-              className="rounded-md bg-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-300 transition-colors"
+              className="rounded-md bg-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-300 transition-colors active:scale-95"
             >
               + New
             </button>
             <button
               onClick={onCloseSidebar}
-              className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 md:hidden"
+              aria-label="Close sidebar"
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-200 transition-colors md:hidden active:scale-95"
             >
-              Close
+              ✕
             </button>
           </div>
         </div>
 
         {/* Chat list */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {loading && (
-            <p className="px-3 py-2 text-xs text-gray-400">Loading...</p>
+            <p className="px-3 py-2 text-xs text-gray-400">Loading chats...</p>
           )}
 
           {!loading && threads.length === 0 && (
-            <p className="px-3 py-2 text-xs text-gray-400">No chats yet. Start a new one!</p>
+            <div className="px-3 py-8 text-center">
+              <p className="text-sm text-gray-400">No chats yet</p>
+              <p className="text-xs text-gray-400 mt-1">Start a new conversation!</p>
+            </div>
           )}
 
           {threads.map((thread) => (
             <div
               key={thread._id}
               onClick={() => onSelectThread(thread._id)}
-              className={`group flex items-center justify-between rounded-md px-3 py-2 cursor-pointer transition-colors ${
+              className={`group flex items-center justify-between rounded-lg px-3 py-3 cursor-pointer transition-all active:scale-[0.98] ${
                 selectedThreadId === thread._id
-                  ? 'bg-gray-200 text-gray-900'
+                  ? 'bg-gray-200 text-gray-900 shadow-sm'
                   : 'hover:bg-gray-200 text-gray-600 hover:text-gray-900'
               }`}
             >
-              <p className="truncate text-sm">
-                {thread.title || 'Untitled'}
+              <p className="truncate text-sm font-medium pr-2">
+                {thread.title || 'Untitled Chat'}
               </p>
 
               <button
                 onClick={(e) => handleDelete(e, thread._id)}
-                className="shrink-0 text-xs text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-500 ml-2 transition-opacity"
+                aria-label="Delete chat"
+                className="shrink-0 rounded px-2 py-1 text-xs text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all active:scale-95"
               >
                 Delete
               </button>
