@@ -128,7 +128,7 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
             </div>
-            <h3 className='text-gray-800 text-base font-semibold mb-2'>Start a conversation</h3>
+            <h3 className='text-gray-800 text-base font-semibold mb-2'>Start a conversation Test(CI-CD)</h3>
             <p className='text-gray-500 text-sm'>Ask me anything and I'll do my best to help!</p>
           </div>
         )}
