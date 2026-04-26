@@ -1,61 +1,23 @@
-name: Deploy to Self-Hosted Runner
+name: Deploy NepAI
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
-concurrency:
-  group: production-deploy
-  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: self-hosted
-    timeout-minutes: 30
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          clean: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+      - name: Pull latest code
+        run: cd ~/NepAI && git pull
 
       - name: Install dependencies
-        run: npm ci
+        run: cd ~/NepAI && npm install
 
-      - name: Build application
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL }}
-        run: npm run build
+      - name: Build app
+        run: cd ~/NepAI && npm run build
 
-      - name: Copy static assets into standalone
-        run: |
-          cp -r .next/static .next/standalone/.next/
-          cp -r public .next/standalone/
-
-      - name: Restart app with PM2
-        env:
-          UPSTASH_REDIS_URL: ${{ secrets.UPSTASH_REDIS_URL }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          PORT: 3000
-        run: |
-          pm2 delete nepai-final || true
-          pm2 start $GITHUB_WORKSPACE/.next/standalone/server.js --name nepai-final
-          pm2 save
+      - name: Restart app (PM2)
+        run: cd ~/NepAI && pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js && pm2 save
