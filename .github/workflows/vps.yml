@@ -56,9 +56,6 @@ jobs:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           PORT: 3000
         run: |
-          if pm2 describe nepai-final > /dev/null 2>&1; then
-            pm2 restart nepai-final --update-env
-          else
-            pm2 start $GITHUB_WORKSPACE/.next/standalone/server.js --name nepai-final
-          fi
+          pm2 delete nepai-final || true
+          pm2 start $GITHUB_WORKSPACE/.next/standalone/server.js --name nepai-final
           pm2 save
