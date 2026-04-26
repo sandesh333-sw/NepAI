@@ -2,11 +2,11 @@ module.exports = {
   apps: [
     {
       name: "nepai",
-      script: "npm",
-      args: "start",
+      script: ".next/standalone/server.js",
       env: {
         NODE_ENV: "production",
-        PORT: 3000
+        PORT: 3000,
+        HOSTNAME: 'localhost'
       }
     }
   ]
