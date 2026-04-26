@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 
-const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
+const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,6 +28,10 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
       const res = await fetch(`/api/threads/${id}`)
       if (res.status === 401) {
         window.location.href = '/sign-in'
+        return
+      }
+      if (res.status === 429) {
+        toast.error('Too many requests. Please wait and try again.')
         return
       }
       const data = await res.json()
@@ -57,6 +61,10 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
       })
       if (res.status === 401) {
         window.location.href = '/sign-in'
+        return
+      }
+      if (res.status === 429) {
+        toast.error('Request limit reached. Please wait before sending again.')
         return
       }
 
@@ -96,9 +104,16 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated }) => {
 
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 bg-white">
+        <button
+          onClick={onOpenSidebar}
+          className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 md:hidden"
+        >
+          Chats
+        </button>
         <h1 className="text-sm font-semibold text-gray-700">
           {threadId ? 'Chat' : 'New Chat'}
         </h1>
+        <div className="w-10 md:hidden" />
       </div>
 
       {/* Messages */}
