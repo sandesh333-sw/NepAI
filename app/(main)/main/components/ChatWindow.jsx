@@ -100,7 +100,7 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
   }
 
   return (
-    <div className='flex flex-col h-full w-full bg-gray-50'>
+    <div className='relative flex flex-col h-full w-full bg-gray-50'>
 
       {/* Header */}
       <div className="flex items-center border-b border-gray-200 px-3 py-3 bg-white md:px-4">
@@ -117,9 +117,9 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
         <div className="w-12 md:hidden" />
       </div>
 
-      {/* Messages Container */}
-      <div className='flex-1 overflow-y-auto bg-gray-50 pb-24'>
-        
+      {/* Messages Container — always justify-end, no min-h-full inner wrapper */}
+      <div className='flex-1 overflow-y-auto bg-gray-50 pb-24 flex flex-col justify-end'>
+
         {/* Empty State */}
         {messages.length === 0 && !loading && (
           <div className='flex h-full items-center justify-center px-6'>
@@ -129,15 +129,15 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               </div>
-              <h3 className='text-gray-700 text-base font-semibold mb-2'>Start a conversation (Test) </h3>
+              <h3 className='text-gray-700 text-base font-semibold mb-2'>Start a conversation (Test)</h3>
               <p className='text-gray-500 text-sm'>Ask me anything and I'll do my best to help!</p>
             </div>
           </div>
         )}
 
-        {/* Messages - pushed to bottom when few messages */}
+        {/* Messages list — no conditional justify-end, messages always at bottom */}
         {messages.length > 0 && (
-          <div className={`min-h-full flex flex-col ${messages.length < 5 ? 'justify-end' : ''} p-4 space-y-4`}>
+          <div className="p-4 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 
@@ -182,10 +182,9 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
             <div ref={bottomRef} />
           </div>
         )}
-
       </div>
 
-      {/* Floating Input - Compact & Shorter */}
+      {/* Floating Input — now correctly positioned because of relative parent */}
       <div className='absolute bottom-0 left-0 right-0 p-3 bg-gray-50 md:p-4'>
         <div className='max-w-3xl mx-auto'>
           <div className='flex items-center gap-2 rounded-full bg-white border border-gray-300 px-4 py-2 shadow-lg hover:shadow-xl focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all'>
