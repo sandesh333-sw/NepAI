@@ -2,12 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [threadId, setThreadId] = useState(selectedThreadId || null)
+  const [remaining, setRemaining] = useState(null)
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -48,7 +53,12 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
     setInput('')
     setLoading(true)
 
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    // ✅ FIXED batching issue
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', content: userMessage },
+      { role: 'assistant', content: '', streaming: true }
+    ])
 
     try {
       const payload = { message: userMessage }
@@ -59,161 +69,217 @@ const ChatWindow = ({ selectedThreadId, onThreadCreated, onOpenSidebar }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
+
       if (res.status === 401) {
         window.location.href = '/sign-in'
         return
       }
-      if (res.status === 429) {
-        toast.error('Request limit reached. Please wait before sending again.')
-        return
-      }
 
-      const data = await res.json()
       if (!res.ok) {
-        if (res.status === 429 && data?.error?.toLowerCase().includes('weekly limit')) {
-          toast.error('Weekly chat limit reached. Please try again next week.')
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: 'You have reached your weekly chat limit (6/week). Please try again next week.'
-          }])
+        const data = await res.json()
+        if (res.status === 429) {
+          toast.error(data.error || 'Request limit reached')
+
+          setMessages(prev => [
+            ...prev.slice(0, -1),
+            {
+              role: 'assistant',
+              content: data.error || 'Weekly limit reached.'
+            }
+          ])
           return
         }
         throw new Error(data.error)
       }
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let accumulatedContent = ''
 
-      if (!threadId) {
-        setThreadId(data.threadId)
-        onThreadCreated?.(data.threadId)
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6))
+
+            if (data.content) {
+              accumulatedContent += data.content
+
+              setMessages(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = {
+                  role: 'assistant',
+                  content: accumulatedContent,
+                  streaming: true
+                }
+                return updated
+              })
+            }
+
+            if (data.done) {
+              setMessages(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = {
+                  role: 'assistant',
+                  content: accumulatedContent,
+                  streaming: false
+                }
+                return updated
+              })
+
+              if (!threadId && data.threadId) {
+                setThreadId(data.threadId)
+                onThreadCreated?.(data.threadId)
+              }
+
+              if (data.remaining !== undefined) {
+                setRemaining(data.remaining)
+              }
+            }
+
+            if (data.error) {
+              throw new Error(data.error)
+            }
+          }
+        }
       }
 
     } catch (error) {
       console.error('Chat error:', error)
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Something went wrong. Please try again.'
-      }])
+
+      setMessages(prev => [
+        ...prev.slice(0, -1),
+        {
+          role: 'assistant',
+          content: 'Something went wrong. Please try again.'
+        }
+      ])
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className='relative flex flex-col h-full w-full bg-gray-50'>
+    <div className='flex flex-col h-full w-full bg-gray-50'>
 
       {/* Header */}
-      <div className="flex items-center border-b border-gray-200 px-3 py-3 bg-white md:px-4">
-        <button
-          onClick={onOpenSidebar}
-          aria-label="Open chat list"
-          className="mr-3 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors md:hidden active:scale-95"
-        >
-          ☰
-        </button>
-        <h1 className="flex-1 text-sm font-semibold text-gray-800 text-center md:text-left">
-          {threadId ? 'Chat' : 'New Chat'}
-        </h1>
-        <div className="w-12 md:hidden" />
-      </div>
+      <div className="flex items-center justify-between border-b border-gray-200 px-3 py-3 bg-white md:px-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenSidebar}
+            className="rounded-lg border px-3 py-2 text-xs md:hidden"
+          >
+            ☰
+          </button>
+          <h1 className="text-sm font-semibold text-gray-700">
+            {threadId ? 'Chat' : 'New Chat'}
+          </h1>
+        </div>
 
-      {/* Messages Container — content always sticks to bottom */}
-      <div className='flex-1 overflow-y-auto bg-gray-50 pb-24 flex flex-col justify-end'>
-
-        {/* Empty State – aligned at bottom naturally */}
-        {messages.length === 0 && !loading && (
-          <div className="flex flex-col items-center justify-end px-6 pt-8 pb-2">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 mb-4">
-              <svg className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-            </div>
-            <h3 className='text-gray-800 text-base font-semibold mb-2'>Start a conversation Test(CI-CD)</h3>
-            <p className='text-gray-500 text-sm'>Ask me anything and I'll do my best to help!</p>
-          </div>
-        )}
-
-        {/* Messages list */}
-        {messages.length > 0 && (
-          <div className="p-4 space-y-4">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-
-                {msg.role === 'assistant' && (
-                  <div className='mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs text-white font-semibold'>
-                    AI
-                  </div>
-                )}
-
-                <div className={`max-w-[85%] rounded-2xl px-4 py-3 md:max-w-2xl ${
-                  msg.role === 'user'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-white text-gray-800 border border-gray-200 shadow-sm'
-                }`}>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">{msg.content}</p>
-                </div>
-
-                {msg.role === 'user' && (
-                  <div className='ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-800 text-xs text-white font-semibold'>
-                    U
-                  </div>
-                )}
-
-              </div>
-            ))}
-
-            {loading && (
-              <div className='flex justify-start'>
-                <div className='mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs text-white font-semibold'>
-                  AI
-                </div>
-                <div className='rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm'>
-                  <div className='flex space-x-1.5'>
-                    <span className='h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]'></span>
-                    <span className='h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]'></span>
-                    <span className='h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]'></span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={bottomRef} />
+        {remaining !== null && (
+          <div className="text-xs px-3 py-1.5 rounded-full bg-gray-100">
+            {remaining} chats left
           </div>
         )}
       </div>
 
-      {/* Floating Input */}
-      <div className='absolute bottom-0 left-0 right-0 p-3 bg-gray-50 md:p-4'>
-        <div className='max-w-3xl mx-auto'>
-          <div className='flex items-center gap-2 rounded-full bg-white border border-gray-300 px-4 py-2 shadow-lg hover:shadow-xl focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all'>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSend()
-                }
-              }}
-              placeholder='Type your message...'
-              disabled={loading}
-              className='flex-1 bg-transparent text-sm text-gray-800 outline-none placeholder-gray-400 disabled:opacity-50'
-            />
-            <button
-              onClick={handleSend}
-              disabled={loading || !input.trim()}
-              aria-label="Send message"
-              className='shrink-0 rounded-full bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95'
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-          </div>
+      {/* Messages */}
+      <div className='flex-1 overflow-y-auto p-4 space-y-4 pb-24'>
+        {messages.map((msg, i) => (
+          <MessageBubble key={i} message={msg} />
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className='absolute bottom-0 left-0 right-0 p-3 bg-gray-50'>
+        <div className='max-w-3xl mx-auto flex gap-2 bg-white border px-4 py-2 rounded-full'>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            className='flex-1 outline-none text-sm'
+            placeholder='Type...'
+          />
+          <button onClick={handleSend} disabled={loading}>
+            Send
+          </button>
         </div>
       </div>
+    </div>
+  )
+}
 
+/* ================= MESSAGE BUBBLE ================= */
+
+const MessageBubble = ({ message }) => {
+  const { role, content, streaming } = message
+  const [copied, setCopied] = useState(false)
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[85%] px-4 py-3 rounded-2xl ${
+        role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border'
+      }`}>
+
+        {role === 'assistant' ? (
+          <div className="prose prose-sm max-w-none prose-pre:p-0 prose-pre:m-0">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '')
+                  const codeString = String(children).replace(/\n$/, '')
+
+                  return !inline && match ? (
+                    <div className="relative group my-2">
+                      <button
+                        onClick={() => copyToClipboard(codeString)}
+                        className="absolute right-2 top-2 text-xs bg-gray-700 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100"
+                      >
+                        {copied ? 'Copied!' : 'Copy'}
+                      </button>
+
+                      <SyntaxHighlighter
+                        style={oneDark}
+                        language={match[1]}
+                        PreTag="div"
+                        className="rounded-lg"
+                        {...props}
+                      >
+                        {codeString}
+                      </SyntaxHighlighter>
+                    </div>
+                  ) : (
+                    <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">
+                      {children}
+                    </code>
+                  )
+                }
+              }}
+            >
+              {content}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <p className="text-sm whitespace-pre-wrap">{content}</p>
+        )}
+
+        {streaming && (
+          <span className="inline-block w-1 h-4 bg-blue-500 animate-pulse ml-1" />
+        )}
+      </div>
     </div>
   )
 }
