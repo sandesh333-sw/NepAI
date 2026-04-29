@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
-import { rateLimit } from '@/lib/rateLimit'
+import redis from '@/lib/redis'
 
 export async function GET() {
   const { userId } = await auth()
@@ -8,9 +8,25 @@ export async function GET() {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const limit = await rateLimit(userId, 'chat', 6, 604800)
+  // Just READ the count, don't increment it
+  const key = `rate_limit:chat:${userId}`
+  const now = Date.now()
+  const windowMs = 604800 * 1000 // 7 days
 
-  return Response.json({
-    remaining: limit.remaining
-  })
+  try {
+    // Remove old timestamps
+    await redis.zremrangebyscore(key, 0, now - windowMs)
+    
+    // Count current requests
+    const count = await redis.zcard(key)
+    
+    // Calculate remaining
+    const remaining = Math.max(0, 6 - count)
+
+    return Response.json({ remaining })
+  } catch (error) {
+    console.error('Usage check error:', error)
+    // Return safe default if Redis fails
+    return Response.json({ remaining: 6 })
+  }
 }
