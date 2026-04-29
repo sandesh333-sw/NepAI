@@ -14,7 +14,7 @@ export async function POST(req) {
   try {
     const { userId } = await auth()
     if (!userId) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       })
@@ -23,10 +23,10 @@ export async function POST(req) {
     // 6 chats per week (7 days = 604800 seconds)
     const limit = await rateLimit(userId, 'chat', 6, 604800)
     if (!limit.success) {
-      return new Response(JSON.stringify({ 
-        error: 'Weekly limit reached (6 chats/week)', 
-        resetIn: `${Math.ceil(limit.resetIn / 3600)}h` 
-      }), { 
+      return new Response(JSON.stringify({
+        error: 'Weekly limit reached (6 chats/week)',
+        resetIn: `${Math.ceil(limit.resetIn / 3600)}h`
+      }), {
         status: 429,
         headers: { 'Content-Type': 'application/json' }
       })
@@ -35,7 +35,7 @@ export async function POST(req) {
     const body = await req.json()
     const validation = validate(chatBodySchema, body)
     if (!validation.ok) {
-      return new Response(JSON.stringify({ error: validation.error }), { 
+      return new Response(JSON.stringify({ error: validation.error }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       })
@@ -49,7 +49,7 @@ export async function POST(req) {
     if (threadId) {
       thread = await Thread.findOne({ _id: threadId, userId })
       if (!thread) {
-        return new Response(JSON.stringify({ error: 'Thread not found' }), { 
+        return new Response(JSON.stringify({ error: 'Thread not found' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json' }
         })
@@ -59,7 +59,7 @@ export async function POST(req) {
     }
 
     thread.messages.push({ role: 'user', content: message })
-    
+
     const history = thread.messages.map(m => ({ role: m.role, content: m.content }))
 
     // Create streaming response
@@ -93,8 +93,8 @@ export async function POST(req) {
           await cache.del(`threads:${userId}`)
 
           // Send final event with metadata
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            done: true, 
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            done: true,
             threadId: thread._id.toString(),
             remaining: limit.remaining
           })}\n\n`))
@@ -103,8 +103,8 @@ export async function POST(req) {
 
         } catch (error) {
           console.error('Streaming error:', error)
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            error: 'Failed to generate response' 
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            error: 'Failed to generate response'
           })}\n\n`))
           controller.close()
         }
@@ -121,7 +121,7 @@ export async function POST(req) {
 
   } catch (error) {
     console.error('Chat error:', error)
-    return new Response(JSON.stringify({ error: 'Internal error' }), { 
+    return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
