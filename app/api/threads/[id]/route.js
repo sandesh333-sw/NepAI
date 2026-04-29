@@ -31,13 +31,6 @@ export async function GET(req, context) {
     const cached = await cache.get(cacheKey)
     if (cached) return NextResponse.json(cached)
 
-    if (!process.env.MONGODB_URI) {
-      return NextResponse.json(
-        { error: 'Server config error (MONGODB_URI missing)', requestId },
-        { status: 500 }
-      )
-    }
-
     await dbConnect()
 
     const thread = await Thread.findOne({ _id: id, userId }).lean()
@@ -45,27 +38,26 @@ export async function GET(req, context) {
       return NextResponse.json({ error: 'Thread not found' }, { status: 404 })
     }
 
-    await cache.set(cacheKey, thread, 120) // 2min TTL
 
-    return NextResponse.json(thread)
+    const chatLimit = await rateLimit(userId, 'chat', 6, 604800)
+
+    const response = {
+      ...thread,
+      remaining: chatLimit.remaining
+    }
+
+    await cache.set(cacheKey, response, 120)
+
+    return NextResponse.json(response)
 
   } catch (error) {
     const message = error?.message || 'Unknown error'
     console.error(`Get thread error [${requestId}]:`, error)
 
-    if (
-      message.includes('MONGODB_URI') ||
-      message.includes('Mongo') ||
-      message.includes('ECONNREFUSED') ||
-      message.includes('ENOTFOUND')
-    ) {
-      return NextResponse.json(
-        { error: `Database request failed: ${message}`, requestId },
-        { status: 503 }
-      )
-    }
-
-    return NextResponse.json({ error: `Internal error: ${message}`, requestId }, { status: 500 })
+    return NextResponse.json(
+      { error: `Internal error: ${message}`, requestId },
+      { status: 500 }
+    )
   }
 }
 

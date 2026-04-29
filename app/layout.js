@@ -20,6 +20,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "NepAI - AI-powered solutions",
   description: "AI-powered solutions for your needs",
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  }
 };
 
 export default function RootLayout({ children }) {
